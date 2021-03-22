@@ -33,6 +33,17 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
 
+    - name: Package
+      run: dotnet pack --no-build --output ./
+
+    - name: Upload package
+      if: ${{ github.event_name == 'push' }}
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: package
+        path: ./*.nupkg
+        retention-days: 7
+
   deploy:
     if: ${{ github.event_name == 'push' }}
 
@@ -44,9 +55,10 @@ jobs:
     needs: [build]
     
     steps:
-    - name: Publish NuGet
-      uses: brandedoutcast/publish-nuget@v2.5.5
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v2.0.8
       with:
-        PROJECT_FILE_PATH: NUnit.Behaviours/NUnit.Behaviours.csproj
-        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+        name: package
+    - name: Publish NuGet
+      run: dotnet nuget push ./*.nupkg --api-key '${{secrets.NUGET_API_KEY}}'
     
