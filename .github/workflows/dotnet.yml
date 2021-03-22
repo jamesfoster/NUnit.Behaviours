@@ -9,6 +9,9 @@ on:
 jobs:
   build:
 
+    environment:
+      name: Main
+
     runs-on: ubuntu-latest
 
     steps:
