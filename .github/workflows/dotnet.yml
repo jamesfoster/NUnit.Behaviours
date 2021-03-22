@@ -27,4 +27,4 @@ jobs:
     - name: Publish NuGet
       uses: brandedoutcast/publish-nuget@v2.5.5
       with:
-        PROJECT_FILE_PATH: src/NUnit.Behaviours/NUnit.Behaviours.csproj
+        PROJECT_FILE_PATH: NUnit.Behaviours/NUnit.Behaviours.csproj
