@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -19,7 +18,7 @@ namespace NUnit.Behaviours
                 GivenNames
                     .Concat(WhenNames)
                     .Concat(new[] { ThenNames[index] })
-            ).Replace("_", " ");
+            );
 
         public int Length => ThenNames.Count;
 
@@ -38,33 +37,9 @@ namespace NUnit.Behaviours
             ThenNames = actions.Select(GetExpressionText).ToList();
         }
 
-        private string GetExpressionText(Expression action)
+        private string GetExpressionText(Expression expression)
         {
-            return action switch
-            {
-                LambdaExpression lambda => GetExpressionText(lambda.Body),
-                MethodCallExpression call => GetMethodCallText(call),
-                MemberExpression member => member.Member.Name,
-                UnaryExpression unary when unary.NodeType == ExpressionType.Convert => GetExpressionText(unary.Operand),
-                _ => action.ToString()
-            };
-        }
-
-        private string GetMethodCallText(MethodCallExpression call)
-        {
-            var result = $"{call.Method.Name}{GetArgumentsText(call.Arguments)}";
-
-            if (call.Object == null)
-                return $"{call.Method.DeclaringType?.Name}.{result}";
-
-            return result;
-        }
-
-        private string GetArgumentsText(ReadOnlyCollection<Expression> arguments)
-        {
-            if (arguments.Count == 0) return string.Empty;
-
-            return "(" + string.Join(", ", arguments.Select(GetExpressionText)) + ")";
+            return ExpressionPrinter.Print(expression);
         }
 
         internal TestCaseParameters GetTestPamameters(int i, InitializationLock locker)

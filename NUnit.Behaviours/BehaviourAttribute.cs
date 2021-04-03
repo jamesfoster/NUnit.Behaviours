@@ -30,16 +30,33 @@ namespace NUnit.Behaviours
         [SecuritySafeCritical]
         private IEnumerable<TestCaseParameters> GetTestCasesFor(IMethodInfo method)
         {
-            List<TestCaseParameters> data = new();
             InitializationLock locker = new();
             var categories = Category?.Split(',') ?? new string[0];
 
             try
             {
+                if (MethodHasTooManyArgs(method))
+                {
+                    return new[] { ErrorState("Too many arguments") };
+                }
+                if (IsMethodMissingBehaviourArg(method))
+                {
+                    return new[] { ErrorState("No behaviour argument") };
+                }
+
                 var source = GetBehaviour(method);
 
-                var length = source.Length;
-                for (int i = 0; i < length; i++)
+                if (source.GivenNames.Count == 0)
+                {
+                    return new[] { ErrorState("No given steps") };
+                }
+                if (source.ThenNames.Count == 0)
+                {
+                    return new[] { ErrorState("No then steps") };
+                }
+
+                List<TestCaseParameters> data = new();
+                for (int i = 0; i < source.Length; i++)
                 {
                     var parms = source.GetTestPamameters(i, locker);
 
@@ -50,14 +67,41 @@ namespace NUnit.Behaviours
 
                     data.Add(parms);
                 }
+
+                return data;
             }
             catch (Exception ex)
             {
-                data.Clear();
-                data.Add(new TestCaseParameters(ex));
+                return new[] { new TestCaseParameters(ex) };
             }
+        }
 
-            return data;
+        private bool MethodHasTooManyArgs(IMethodInfo method)
+        {
+            var parameters = method.GetParameters();
+
+            return parameters.Length > 1;
+        }
+
+        private bool IsMethodMissingBehaviourArg(IMethodInfo method)
+        {
+            var parameters = method.GetParameters();
+
+            if (parameters.Length == 0) return true;
+
+            var parameterType = parameters[0].ParameterType;
+
+            return parameterType != typeof(Behaviour);
+        }
+
+        private TestCaseParameters ErrorState(string message)
+        {
+            var parms = new TestCaseParameters();
+
+            parms.RunState = RunState.NotRunnable;
+            parms.Properties.Set(PropertyNames.SkipReason, message);
+
+            return parms;
         }
 
         private BehaviourRecorder GetBehaviour(IMethodInfo method)

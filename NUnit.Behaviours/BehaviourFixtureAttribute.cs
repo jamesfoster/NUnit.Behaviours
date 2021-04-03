@@ -15,10 +15,6 @@ namespace NUnit.Behaviours
         public IEnumerable<TestSuite> BuildFrom(ITypeInfo typeInfo)
         {
             var methods = typeInfo.GetMethodsWithAttribute<BehaviourAttribute>(inherit: false);
-
-            var fixtureSuite = new TestSuite(typeInfo);
-            fixtureSuite.ApplyAttributesToTest(typeInfo.Type.GetTypeInfo());
-
             foreach (var method in methods)
             {
                 var builder = new NUnitTestFixtureBuilder();
@@ -27,10 +23,8 @@ namespace NUnit.Behaviours
 
                 fixture.FullName = $"{typeInfo.FullName}.{method.Name}";
 
-                fixtureSuite.Add(fixture);
+                yield return fixture;
             }
-
-            yield return fixtureSuite;
         }
 
         private class MethodFilter : IPreFilter
