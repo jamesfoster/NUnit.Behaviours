@@ -4,7 +4,7 @@
     <TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>0.0.0.1</Version>
+    <Version>0.0.0.2</Version>
     <Authors>jamesfoster</Authors>
     <Description>A BDD style framework for writing tests in NUnit</Description>
     <Copyright>James Foster</Copyright>
